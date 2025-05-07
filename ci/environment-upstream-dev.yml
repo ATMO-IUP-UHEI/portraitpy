@@ -1,0 +1,11 @@
+name: portraitpy-dev
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - pre-commit
+  - pytest-cov
+  - pytest-sugar
+  - pip:
+      - git+https://github.com/numpy/numpy
+      - git+https://github.com/matplotlib/matplotlib
