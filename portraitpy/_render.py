@@ -26,6 +26,8 @@ def _draw_legend(ax, labels, title, ntris, linewidth, **kwargs):
     """
     labels = labels or []
     title = title or ''
+    kwargs.pop('width', None)
+    kwargs.pop('height', None)
 
     # build a tiny 2×2 grid around (0,0)
     x, y = np.meshgrid(np.arange(2), np.arange(2))
@@ -64,6 +66,8 @@ def _draw_colorbar_inset(fig, tpc, cax=None, **kwargs):
     """Private: Draw a colorbar inset.
     If legend is present, place it to the right of the legend inset; otherwise attach to main Axes.
     """
+    kwargs.pop('width', None)
+    kwargs.pop('height', None)
     if cax is not None:
         return fig.colorbar(tpc, cax=cax, **kwargs)
     else:
