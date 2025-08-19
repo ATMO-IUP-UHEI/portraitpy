@@ -25,8 +25,8 @@ CLASSIFIERS = [
 ]
 
 setup(
-    name='mosaicpy',
-    description='mosaicpy: Extending matplotlib to add support for portrait or Gleckler plots',
+    name='portraitpy',
+    description='portraitpy: Extending matplotlib to add support for portrait or Gleckler plots',
     long_description=long_description,
     long_description_content_type='text/markdown',
     python_requires='>=3.10',

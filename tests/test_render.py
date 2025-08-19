@@ -21,7 +21,9 @@ def test_draw_main_mesh_rgba():
     # two triangles per cell, RGBA per triangle
     data = np.array([[[[1.0, 0.0, 0.0, 1.0], [0.0, 1.0, 0.0, 1.0]]]])
     # reshape to (1,1,2,4)
-    tpc = _draw_main_mesh(ax, pts, tris, data, rgba=4, cmap=None, linewidth=0.1)
+    tpc = _draw_main_mesh(
+        ax, pts, tris, data, rgba=4, cmap=None, linewidth=0.1, vmin=None, vmax=None
+    )
     assert isinstance(tpc, PolyCollection)
     # two triangles → two facecolors
     facecolors = tpc.get_facecolors()
@@ -36,7 +38,9 @@ def test_draw_main_mesh_colormap():
     pts, tris = make_grid(1, 1)
     # data per triangle
     data = np.array([[[0.2, 0.8]]])  # shape (1,1,2)
-    tpc = _draw_main_mesh(ax, pts, tris, data, rgba=None, cmap='viridis', linewidth=0.2)
+    tpc = _draw_main_mesh(
+        ax, pts, tris, data, rgba=None, cmap='viridis', linewidth=0.2, vmin=None, vmax=None
+    )
     # tripcolor returns a QuadMesh or PolyCollection-like mappable with .get_array()
     arr = tpc.get_array()
     assert np.allclose(arr, data.flatten())

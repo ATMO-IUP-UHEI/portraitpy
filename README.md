@@ -21,17 +21,24 @@ data = np.arange(np.prod(shape)).reshape(shape)
 Then we can either visualize the data directly:
 
 ```python
-portrait_plot(
+result = portrait_plot(
     data,
-    edgecolors = "k",
-    cmap = "viridis",
-    add_colorbar = True,
-    legend_title = "Legend",
-    legend_labels = ["A", "B", "C", "D"],
+    edgecolors="k",
+    cmap="viridis",
+    add_colorbar=True,
+    legend_title="Legend",
+    legend_labels=["A", "B", "C", "D"],
 )
+
+# Access individual components
+collection = result['collection']  # The main PolyCollection
+ax = result['ax']                  # The main Axes
+fig = result['fig']                # The Figure
+cbar = result['cbar']              # The Colorbar (if created)
+legend_ax = result['legend_ax']    # The legend Axes (if created)
 ```
 
-Or we visualize colors explicitely
+Or we visualize colors explicitly:
 
 ```python
 import matplotlib.pyplot as plt
@@ -41,11 +48,11 @@ norm = Normalize(vmin=0, vmax=np.max(data))
 cmap = plt.get_cmap("plasma")
 colors = cmap(norm(data))
 
-portrait_plot(
+result = portrait_plot(
     colors,
-    edgecolors = "k",
-    legend_title = "Legend",
-    legend_labels = ["A", "B", "C", "D"],
+    edgecolors="k",
+    legend_title="Legend",
+    legend_labels=["A", "B", "C", "D"],
 )
 ```
 
@@ -55,18 +62,63 @@ We can also do this with only 2 triangles per tile:
 shape = (6, 4, 2)  # shape: (rows, columns, 2 triangles)
 data = np.arange(np.prod(shape)).reshape(shape)
 
-portrait_plot(
+result = portrait_plot(
     data,
-    edgecolors = "k",
-    cmap = "viridis",
-    add_colorbar = True,
-    legend_title = "Legend",
-    legend_labels = ["A", "B"],
+    edgecolors="k",
+    cmap="viridis",
+    add_colorbar=True,
+    legend_title="Legend",
+    legend_labels=["A", "B"],
 )
 ```
 
-Legend and colorbar can be customized with `legend_kwargs` and `cbar_kwargs`.
-The `legend_kwargs` parameter is custom and takes `width` and `height` keys, while `cbar_kwargs` can carry additional keys which are passed to `plt.colorbar`.
+You can also control the colormap scaling with `vmin` and `vmax`:
+
+```python
+# Create a portrait plot with fixed color scaling
+result = portrait_plot(
+    data,
+    edgecolors="k",
+    cmap="RdBu_r",  # A diverging colormap
+    add_colorbar=True,
+    vmin=-10,       # Minimum value for colormap
+    vmax=10,        # Maximum value for colormap
+    legend_title="Legend",
+    legend_labels=["A", "B"],
+)
+```
+
+You can also provide your own axes to plot on:
+
+```python
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(8, 6))
+result = portrait_plot(
+    data,
+    ax=ax,
+    add_colorbar=True,
+    cbar_kwargs={'label': 'Values'},
+)
+fig.suptitle('My Custom Portrait Plot')
+plt.tight_layout()
+plt.show()
+```
+
+## Customization
+
+The `portrait_plot` function accepts several parameters for customization:
+
+- `figsize`: Tuple of (width, height) in inches for the figure (when creating a new figure)
+- `cmap`: Colormap for the plot (e.g., 'viridis', 'plasma', etc.)
+- `add_colorbar`: Whether to display a colorbar
+- `cbar_kwargs`: Dictionary of keyword arguments passed to `fig.colorbar()`
+- `legend_title`: Title for the legend inset
+- `legend_labels`: List of labels for the legend inset (must match the number of triangles)
+- `legend_kwargs`: Dictionary of keyword arguments for the legend inset
+- `vmin`, `vmax`: Minimum and maximum values for colormap scaling (only used for 3D arrays)
+
+The `legend_kwargs` parameter is custom and takes `width`, `height`, `x0`, and `y0` keys for positioning, while `cbar_kwargs` can carry additional keys which are passed to `plt.colorbar()`.
 
 ## References
 
