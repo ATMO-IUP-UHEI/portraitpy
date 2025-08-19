@@ -4,13 +4,10 @@
 
 Portrait (Gleckler) plotting API.
 """
-from pkg_resources import DistributionNotFound, get_distribution
+from importlib.metadata import version
 
 from .portrait import portrait_plot
 
-try:
-    __version__ = get_distribution(__name__).version
-except DistributionNotFound:  # pragma: no cover
-    __version__ = 'unknown'  # pragma: no cover
+__version__ = version(__name__)
 
 __all__ = ['portrait_plot']
