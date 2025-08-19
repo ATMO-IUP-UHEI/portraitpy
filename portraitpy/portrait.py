@@ -10,13 +10,48 @@ from ._render import _draw_colorbar_inset, _draw_legend, _draw_main_mesh
 from ._triangulation import _make_triangulation
 
 
-def _setup_axes(nrows, ncols, figheight, has_legend, has_cbar, legend_kwargs, cbar_kwargs):
-    """Create figure, GridSpec and return fig, main ax, legend_ax, cbar_ax."""
+def _setup_axes(
+    nrows,
+    ncols,
+    figheight,
+    has_legend,
+    has_cbar,
+    legend_kwargs,
+    cbar_kwargs,
+    legend_position='right',
+    legend_cbar_spacing=0.05,
+):
+    """Create figure, GridSpec and return fig, main ax, legend_ax, cbar_ax.
+
+    Parameters
+    ----------
+    nrows, ncols : int
+        Dimensions of the data grid
+    figheight : float
+        Height of the figure in inches
+    has_legend, has_cbar : bool
+        Whether to include legend and colorbar
+    legend_kwargs, cbar_kwargs : dict
+        Configuration for legend and colorbar
+    legend_position : str, optional
+        Position of the legend relative to colorbar. Can be 'left' or 'right'.
+        Default is 'right', which places the legend after the colorbar.
+    legend_cbar_spacing : float, optional
+        Controls the spacing between legend and colorbar. Default is 0.05.
+    """
     # compute overall figure size
     aspect = ncols / nrows
     legend_space = has_legend * (figheight * aspect / ncols)
     cbar_space = has_cbar * (figheight * cbar_kwargs.get('width', 0.07))
-    pad = 0.02
+
+    # Adjust padding based on what components are present
+    if has_legend and has_cbar:
+        pad = legend_cbar_spacing  # Use specified spacing
+    elif has_cbar and not has_legend:
+        pad = 0.01  # Reduced padding when only colorbar is present
+    else:
+        pad = 0.02  # Standard padding for other cases
+
     base_width = figheight * aspect
     fig_width = base_width + legend_space + cbar_space
     total_width = fig_width * (1 + pad * (has_legend + has_cbar))
@@ -27,17 +62,32 @@ def _setup_axes(nrows, ncols, figheight, has_legend, has_cbar, legend_kwargs, cb
         layout='constrained',
     )
 
-    # layout grid: columns = main + optional legend + optional cbar
+    # layout grid: columns = main + optional components
     ncols_sub = 1 + has_legend + has_cbar
     # width ratios
     main_w = ncols
     cbar_w = cbar_kwargs.get('width', 0.07) * ncols
     legend_w = legend_kwargs.get('width', 1 / ncols) * ncols
+
+    # Determine the order of components
     width_ratios = [main_w]
-    if has_legend:
+
+    # First component after main plot
+    if has_cbar and legend_position == 'left':
         width_ratios.append(legend_w)
-    if has_cbar:
+    elif has_legend and not has_cbar:
+        width_ratios.append(legend_w)
+    elif has_legend and legend_position == 'right':
         width_ratios.append(cbar_w)
+    elif has_cbar:
+        width_ratios.append(cbar_w)
+
+    # Second component if needed
+    if has_legend and has_cbar:
+        if legend_position == 'right':
+            width_ratios.append(legend_w)
+        elif legend_position == 'left':
+            width_ratios.append(cbar_w)
 
     # height ratios: small top row for legend, equal size to one row, whitespace below
     legend_frac = 1 / nrows
@@ -50,23 +100,85 @@ def _setup_axes(nrows, ncols, figheight, has_legend, has_cbar, legend_kwargs, cb
         width_ratios=width_ratios,
         height_ratios=height_ratios,
     )
-    gs.tight_layout(fig, h_pad=0, w_pad=f'{int(pad*100)}%')
+
+    # Adjust the w_pad based on the components present
+    w_pad = f'{int(pad*100)}%'
+    gs.tight_layout(fig, h_pad=0, w_pad=w_pad)
 
     # assign subplots in order
     ax = fig.add_subplot(gs[:, 0])
-    legend_ax = fig.add_subplot(gs[0, 1]) if has_legend else None
-    cbar_ax = fig.add_subplot(gs[:, -1]) if has_cbar else None
+
+    # Position components based on order
+    legend_ax = None
+    cbar_ax = None
+
+    if has_cbar and has_legend:
+        if legend_position == 'right':
+            cbar_ax = fig.add_subplot(gs[:, 1])
+            legend_ax = fig.add_subplot(gs[0, 2])
+        else:
+            legend_ax = fig.add_subplot(gs[0, 1])
+            cbar_ax = fig.add_subplot(gs[:, 2])
+    elif has_cbar:
+        cbar_ax = fig.add_subplot(gs[:, 1])
+    elif has_legend:
+        legend_ax = fig.add_subplot(gs[0, 1])
+
     return fig, ax, legend_ax, cbar_ax
 
 
-def _make_inset_axes(ax, ncols, legend_kwargs, kwargs):
-    """Create inset axes for colorbar, positioned to the right of the legend."""
-    legend_w = legend_kwargs.get('width', 1 / ncols)
-    pad = 0.05
-    x0 = kwargs.pop('x0', 1.04 + legend_w + pad)
-    y0 = kwargs.pop('y0', 0)
+def _make_inset_axes(
+    ax,
+    ncols,
+    legend_kwargs,
+    kwargs,
+    has_legend=True,
+    legend_position='right',
+    legend_cbar_spacing=0.05,
+):
+    """Create inset axes for colorbar, positioned appropriately.
+
+    Parameters
+    ----------
+    ax : matplotlib.axes.Axes
+        The parent axes to which the inset will be added
+    ncols : int
+        Number of columns in the data grid, used for default width calculation
+    legend_kwargs : dict
+        Keyword arguments for legend positioning, used to position colorbar after legend
+    kwargs : dict
+        Keyword arguments for colorbar positioning
+    has_legend : bool, optional
+        Whether a legend is present
+    legend_position : str, optional
+        Position of the legend relative to colorbar. Can be 'left' or 'right'.
+        Default is 'right', which places the legend after the colorbar.
+        Use 'left' to place the legend before the colorbar.
+    legend_cbar_spacing : float, optional
+        Controls the spacing between legend and colorbar. Default is 0.05.
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+        The created inset axes for the colorbar
+    """
     width = kwargs.pop('width', 0.07)
     height = kwargs.pop('height', 1)
+    pad = kwargs.pop('pad', legend_cbar_spacing)
+
+    if has_legend:
+        legend_w = legend_kwargs.get('width', 1 / ncols)
+        if legend_position == 'right':
+            # Position colorbar first, then legend
+            x0 = kwargs.pop('x0', 1.02)
+        else:
+            # Position legend first, then colorbar
+            x0 = kwargs.pop('x0', 1.04 + legend_w + pad)
+    else:
+        # No legend, position colorbar directly after main axes
+        x0 = kwargs.pop('x0', 1.02)
+
+    y0 = kwargs.pop('y0', 0)
     return ax.inset_axes([x0, y0, width, height], transform=ax.transAxes)
 
 
@@ -80,6 +192,8 @@ def portrait_plot(
     legend_title: Optional[str] = None,
     legend_labels: Optional[List[str]] = None,
     legend_kwargs: Optional[Dict[str, Any]] = None,
+    legend_position: Optional[str] = 'right',
+    legend_cbar_spacing: Optional[float] = 0.05,
     vmin: Optional[float] = None,
     vmax: Optional[float] = None,
     **kwargs: Any,
@@ -110,6 +224,13 @@ def portrait_plot(
         The labels for the legend inset. Must match the number of triangles.
     legend_kwargs : dict, optional
         Additional keyword arguments to pass to the legend inset.
+    legend_position : str, optional
+        Position of the legend relative to colorbar. Can be 'left' or 'right'.
+        Default is 'right', which places the legend after the colorbar.
+        Use 'left' to place the legend before the colorbar.
+    legend_cbar_spacing : float, optional
+        Controls the spacing between legend and colorbar. Default is 0.05.
+        Increase this value to add more space between them.
     vmin : float, optional
         Minimum value for colormap normalization.
     vmax : float, optional
@@ -191,6 +312,8 @@ def portrait_plot(
             has_cbar,
             legend_kwargs,
             cbar_kwargs,
+            legend_position,
+            legend_cbar_spacing,
         )
     else:
         fig = ax.figure
@@ -217,7 +340,17 @@ def portrait_plot(
         if has_axes:
             width = legend_kwargs.get('width', 1 / ncols)
             height = legend_kwargs.get('height', 1 / nrows)
-            x0 = legend_kwargs.get('x0', 1.04)
+
+            # Position the legend based on legend_position
+            if has_cbar and legend_position == 'right':
+                # If we have a colorbar and legend comes after, position it to the right of where the colorbar would be
+                cbar_width = cbar_kwargs.get('width', 0.07)
+                pad = legend_kwargs.get('pad', legend_cbar_spacing)
+                x0 = legend_kwargs.get('x0', 1.02 + cbar_width + pad)
+            else:
+                # Standard position directly after main axes
+                x0 = legend_kwargs.get('x0', 1.04)
+
             y0 = legend_kwargs.get('y0', 1 - height)
             legend_ax = ax.inset_axes([x0, y0, width, height], transform=ax.transAxes)
         _draw_legend(legend_ax, labels, legend_title, ntris, linewidth, **kwargs)
@@ -226,8 +359,16 @@ def portrait_plot(
     cbar = None
     if has_cbar:
         if has_axes:
-            # compute inset position after legend (if present)
-            cbar_ax = _make_inset_axes(ax, ncols, legend_kwargs, cbar_kwargs)
+            # compute inset position based on legend placement
+            cbar_ax = _make_inset_axes(
+                ax,
+                ncols,
+                legend_kwargs,
+                cbar_kwargs,
+                has_legend=has_legend,
+                legend_position=legend_position,
+                legend_cbar_spacing=legend_cbar_spacing,
+            )
         # if axes were created via _setup_axes, cbar_ax is already set
         cbar = _draw_colorbar_inset(fig, tpc, cax=cbar_ax, **cbar_kwargs)
 
