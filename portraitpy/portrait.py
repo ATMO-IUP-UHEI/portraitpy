@@ -194,6 +194,7 @@ def portrait_plot(
     legend_kwargs: Optional[Dict[str, Any]] = None,
     legend_position: Optional[str] = 'right',
     legend_cbar_spacing: Optional[float] = 0.05,
+    legend_ax: Optional[Axes] = None,
     vmin: Optional[float] = None,
     vmax: Optional[float] = None,
     **kwargs: Any,
@@ -231,6 +232,9 @@ def portrait_plot(
     legend_cbar_spacing : float, optional
         Controls the spacing between legend and colorbar. Default is 0.05.
         Increase this value to add more space between them.
+    legend_ax : matplotlib.axes.Axes, optional
+        A custom axes to use for the legend. If provided, the legend will be drawn
+        in this axes instead of creating a new inset axes.
     vmin : float, optional
         Minimum value for colormap normalization.
     vmax : float, optional
@@ -317,8 +321,8 @@ def portrait_plot(
         )
     else:
         fig = ax.figure
-        legend_ax = None
         cbar_ax = None
+        # Use provided legend_ax if given, otherwise it will be created later if needed
 
     # Generate mesh points
     x, y = np.meshgrid(np.arange(ncols + 1), np.arange(nrows + 1))
@@ -337,7 +341,8 @@ def portrait_plot(
                 f'Number of legend labels ({len(labels)}) '
                 f'must match number of triangles ({ntris}).'
             )
-        if has_axes:
+        # Create legend_ax if not provided and we have axes
+        if has_axes and legend_ax is None:
             width = legend_kwargs.get('width', 1 / ncols)
             height = legend_kwargs.get('height', 1 / nrows)
 
