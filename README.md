@@ -35,8 +35,10 @@ collection = result['collection']  # The main PolyCollection
 ax = result['ax']                  # The main Axes
 fig = result['fig']                # The Figure
 cbar = result['cbar']              # The Colorbar (if created)
-legend_ax = result['legend_ax']    # The legend Axes (if created)
+main = result['main']    # The legend Axes (if created)
 ```
+
+![Example 1 Output](https://github.com/ATMO-IUP-UHEI/portraitpy/raw/main/docs/images/example1_output.png)
 
 Or we visualize colors explicitly:
 
@@ -56,6 +58,8 @@ result = portrait_plot(
 )
 ```
 
+![Example 2 Output](https://github.com/ATMO-IUP-UHEI/portraitpy/raw/main/docs/images/example2_output.png)
+
 We can also do this with only 2 triangles per tile:
 
 ```python
@@ -71,6 +75,8 @@ result = portrait_plot(
     legend_labels=["A", "B"],
 )
 ```
+
+![Example 3 Output](https://github.com/ATMO-IUP-UHEI/portraitpy/raw/main/docs/images/example3_output.png)
 
 You can also control the colormap scaling with `vmin` and `vmax`:
 
@@ -88,6 +94,8 @@ result = portrait_plot(
 )
 ```
 
+![Example 4 Output](https://github.com/ATMO-IUP-UHEI/portraitpy/raw/main/docs/images/example4_output.png)
+
 You can also provide your own axes to plot on:
 
 ```python
@@ -104,6 +112,8 @@ fig.suptitle('My Custom Portrait Plot')
 plt.tight_layout()
 plt.show()
 ```
+
+![Example 5 Output](https://github.com/ATMO-IUP-UHEI/portraitpy/raw/main/docs/images/example5_output.png)
 
 ## Customization
 
