@@ -38,7 +38,7 @@ cbar = result['cbar']              # The Colorbar (if created)
 main = result['main']    # The legend Axes (if created)
 ```
 
-![Example 1 Output](https://github.com/ATMO-IUP-UHEI/portraitpy/raw/main/docs/images/example1_output.png)
+![Example 1 Output](https://github.com/ATMO-IUP-UHEI/portraitpy/blob/main/docs/images/example1_output.png?raw=true)
 
 Or we visualize colors explicitly:
 
@@ -58,7 +58,7 @@ result = portrait_plot(
 )
 ```
 
-![Example 2 Output](https://github.com/ATMO-IUP-UHEI/portraitpy/raw/main/docs/images/example2_output.png)
+![Example 2 Output](https://github.com/ATMO-IUP-UHEI/portraitpy/blob/main/docs/images/example2_output.png?raw=true)
 
 We can also do this with only 2 triangles per tile:
 
@@ -76,7 +76,7 @@ result = portrait_plot(
 )
 ```
 
-![Example 3 Output](https://github.com/ATMO-IUP-UHEI/portraitpy/raw/main/docs/images/example3_output.png)
+![Example 3 Output](https://github.com/ATMO-IUP-UHEI/portraitpy/blob/main/docs/images/example3_output.png?raw=true)
 
 You can also control the colormap scaling with `vmin` and `vmax`:
 
@@ -94,7 +94,7 @@ result = portrait_plot(
 )
 ```
 
-![Example 4 Output](https://github.com/ATMO-IUP-UHEI/portraitpy/raw/main/docs/images/example4_output.png)
+![Example 4 Output](https://github.com/ATMO-IUP-UHEI/portraitpy/blob/main/docs/images/example4_output.png?raw=true)
 
 You can also provide your own axes to plot on:
 
@@ -113,7 +113,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-![Example 5 Output](https://github.com/ATMO-IUP-UHEI/portraitpy/raw/main/docs/images/example5_output.png)
+![Example 5 Output](https://github.com/ATMO-IUP-UHEI/portraitpy/blob/main/docs/images/example5_output.png?raw=true)
 
 ## Customization
 
