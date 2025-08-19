@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import rcParams
 from matplotlib.axes import Axes
-from matplotlib.collections import PolyCollection
 from matplotlib.gridspec import GridSpec
 
 from ._render import _draw_colorbar_inset, _draw_legend, _draw_main_mesh
@@ -74,15 +73,17 @@ def _make_inset_axes(ax, ncols, legend_kwargs, kwargs):
 def portrait_plot(
     array: np.ndarray,
     ax: Optional[Axes] = None,
-    figheight: Optional[float] = 6,
+    figsize: Optional[tuple] = None,
     cmap: Optional[str] = 'viridis',
     add_colorbar: Optional[bool] = False,
     cbar_kwargs: Optional[Dict[str, Any]] = None,
     legend_title: Optional[str] = None,
     legend_labels: Optional[List[str]] = None,
     legend_kwargs: Optional[Dict[str, Any]] = None,
+    vmin: Optional[float] = None,
+    vmax: Optional[float] = None,
     **kwargs: Any,
-) -> PolyCollection:
+) -> Dict[str, Any]:
     """
     Create a portrait or Gleckler plot (cf. Gleckler, 2008) using matplotlib.
 
@@ -94,9 +95,9 @@ def portrait_plot(
         If 4D, the last dimension must be 4 (RGBA).
     ax : matplotlib.axes.Axes, optional
         The axes on which to plot the portrait.
-    figheight : float, optional
-        The height of the figure in inches. Will be used if ax is None. The width is
-        calculated based on the aspect ratio of the data and the existence of legend and cbar.
+    figsize : tuple, optional
+        The (width, height) of the figure in inches. If only ax is None and figsize is None,
+        a default figsize will be calculated based on the data shape.
     cmap : str, optional
         The colormap to use for the plot if array is 3D. Default is 'viridis'.
     add_colorbar : bool, optional
@@ -109,13 +110,22 @@ def portrait_plot(
         The labels for the legend inset. Must match the number of triangles.
     legend_kwargs : dict, optional
         Additional keyword arguments to pass to the legend inset.
+    vmin : float, optional
+        Minimum value for colormap normalization.
+    vmax : float, optional
+        Maximum value for colormap normalization.
     **kwargs : keyword arguments
         Additional keyword arguments to pass to the PolyCollection or tripcolor.
 
     Returns
     -------
-    PolyCollection
-        The PolyCollection object created for the plot.
+    dict
+        Dictionary containing the plot components:
+        - 'collection': The PolyCollection object created for the plot
+        - 'ax': The main Axes object
+        - 'fig': The Figure object
+        - 'cbar': The Colorbar object (if created)
+        - 'legend_ax': The legend Axes object (if created)
 
     Raises
     ValueError
@@ -145,6 +155,14 @@ def portrait_plot(
     kwargs.setdefault('edgecolors', 'black')
     cbar_kwargs = cbar_kwargs or {}
     legend_kwargs = legend_kwargs or {}
+
+    # Calculate figheight from figsize if provided
+    figheight = 6  # Default height
+    if figsize is not None:
+        if isinstance(figsize, tuple) and len(figsize) == 2:
+            figheight = figsize[1]
+        else:
+            raise ValueError('figsize must be a tuple of (width, height)')
 
     rgba = None
     if array.ndim == 3:
@@ -186,7 +204,7 @@ def portrait_plot(
 
     # build triangulation and draw main mesh
     triangles, points = _make_triangulation(nrows, ncols, ntris, points)
-    tpc = _draw_main_mesh(ax, points, triangles, array, rgba, cmap, linewidth, **kwargs)
+    tpc = _draw_main_mesh(ax, points, triangles, array, rgba, cmap, linewidth, vmin, vmax, **kwargs)
 
     # draw legend into its own Axes
     if has_legend:
@@ -205,12 +223,13 @@ def portrait_plot(
         _draw_legend(legend_ax, labels, legend_title, ntris, linewidth, **kwargs)
 
     # draw colorbar into its own Axes
+    cbar = None
     if has_cbar:
         if has_axes:
             # compute inset position after legend (if present)
             cbar_ax = _make_inset_axes(ax, ncols, legend_kwargs, cbar_kwargs)
         # if axes were created via _setup_axes, cbar_ax is already set
-        _draw_colorbar_inset(fig, tpc, cax=cbar_ax, **cbar_kwargs)
+        cbar = _draw_colorbar_inset(fig, tpc, cax=cbar_ax, **cbar_kwargs)
 
     # finalize main axes limits etc.
     ax.set_xlim(-0.51, ncols - 0.49)
@@ -221,4 +240,15 @@ def portrait_plot(
     ax.set_yticks([])
     ax.set_frame_on(False)
 
-    return tpc
+    # Create return dictionary with all components
+    result = {'collection': tpc, 'ax': ax, 'fig': fig}
+
+    # Add optional components if they exist
+    if has_cbar:
+        result['cbar'] = cbar
+        if cbar_ax is not None:
+            result['cbar_ax'] = cbar_ax  # For backward compatibility with tests
+    if has_legend and legend_ax is not None:
+        result['legend_ax'] = legend_ax
+
+    return result

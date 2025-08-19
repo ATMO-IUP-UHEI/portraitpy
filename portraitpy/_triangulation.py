@@ -2,8 +2,26 @@ import numpy as np
 
 
 def _generate_four_triangles(nrows, ncols, points):
-    """Private: Generate four triangles for each cell in a grid.
-    Each triangle is represented by three vertices (corners of the cell).
+    """Generate four triangles for each cell in a grid.
+
+    Each triangle is represented by three vertices. This function adds a center point
+    to each grid cell and creates four triangles connecting to the corners.
+
+    Parameters
+    ----------
+    nrows : int
+        Number of rows in the grid
+    ncols : int
+        Number of columns in the grid
+    points : numpy.ndarray
+        Array of point coordinates with shape (n_points, 2)
+
+    Returns
+    -------
+    triangles : numpy.ndarray
+        Array of triangle indices with shape (4*nrows*ncols, 3)
+    points : numpy.ndarray
+        Updated array of points with added center points
     """
     triangles = []
     for i in range(nrows):
@@ -26,8 +44,21 @@ def _generate_four_triangles(nrows, ncols, points):
 
 
 def _generate_two_triangles(nrows, ncols):
-    """Private: Generate two triangles for each cell in a grid.
-    Each triangle is represented by three vertices (corners of the cell).
+    """Generate two triangles for each cell in a grid.
+
+    Each triangle is represented by three vertices, using the corners of each grid cell.
+
+    Parameters
+    ----------
+    nrows : int
+        Number of rows in the grid
+    ncols : int
+        Number of columns in the grid
+
+    Returns
+    -------
+    numpy.ndarray
+        Array of triangle indices with shape (2*nrows*ncols, 3)
     """
     triangles = []
     for i in range(nrows):
@@ -39,13 +70,32 @@ def _generate_two_triangles(nrows, ncols):
             p2 = p0 + (ncols + 1)
             p3 = p2 + 1
 
-            # Add two triangles: TL, BR
+            # Add two triangles: TL-BR diagonal
             triangles += [[p0, p1, p2], [p2, p1, p3]]
     return np.array(triangles)
 
 
 def _make_triangulation(nrows, ncols, ntris, points):
-    """Private: Generate triangles and updated points for a grid."""
+    """Generate triangles and updated points for a grid.
+
+    Parameters
+    ----------
+    nrows : int
+        Number of rows in the grid
+    ncols : int
+        Number of columns in the grid
+    ntris : int
+        Number of triangles per grid cell (2 or 4)
+    points : numpy.ndarray
+        Array of point coordinates with shape (n_points, 2)
+
+    Returns
+    -------
+    triangles : numpy.ndarray
+        Array of triangle indices
+    points : numpy.ndarray
+        Updated array of points (may include added center points if ntris=4)
+    """
     if ntris == 4:
         return _generate_four_triangles(nrows, ncols, points)
     # for 2 triangles we do not add new points
