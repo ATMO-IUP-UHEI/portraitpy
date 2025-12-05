@@ -18,9 +18,9 @@ CLASSIFIERS = [
     'Intended Audience :: Science/Research',
     'Programming Language :: Python',
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.10',
-    'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
+    'Programming Language :: Python :: 3.14',
     'Topic :: Scientific/Engineering',
 ]
 
@@ -29,7 +29,7 @@ setup(
     description='portraitpy: Extending matplotlib to add support for portrait or Gleckler plots',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    python_requires='>=3.10',
+    python_requires='>=3.12',
     maintainer='Lukas Pilz',
     classifiers=CLASSIFIERS,
     packages=find_packages(exclude=('tests',)),

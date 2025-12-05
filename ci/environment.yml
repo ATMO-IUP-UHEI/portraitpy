@@ -3,6 +3,7 @@ channels:
   - conda-forge
   - nodefaults
 dependencies:
+  - python>=3.12
   - pre-commit
   - pytest-cov
   - pytest-sugar
